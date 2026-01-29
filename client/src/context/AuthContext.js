@@ -1,4 +1,4 @@
-import { createContext, useState, useCallback } from 'react';
+import { createContext, useState, useCallback, useEffect } from 'react';
 import { authService } from '../services/authService';
 
 export const AuthContext = createContext();
@@ -37,6 +37,24 @@ export const AuthProvider = ({ children }) => {
     setError(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const data = await authService.getMe();
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      refreshUser();
+    }
+  }, [token, refreshUser]);
+
   const isAuthenticated = useCallback(() => {
     return !!token && !!user;
   }, [token, user]);
@@ -51,6 +69,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         isAuthenticated,
+        refreshUser,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { authService } from '../services/authService';
 
 export const About = () => {
   const technicalSkills = {
@@ -12,13 +13,34 @@ export const About = () => {
   const achievements = [
     { title: 'Winner – Internal Hackathon 2025', description: 'Successfully developed a full-stack application addressing real-world problems' },
     { title: 'Active LeetCode Practitioner', description: 'Consistently solving algorithmic problems and building strong DSA foundation' },
-    { title: 'Tech Community Leader', description: <><a href="https://codescriet.dev/" target="_blank" rel="noopener noreferrer" style={{color: '#06B6D4', textDecoration: 'none', fontWeight: '600'}}>CODE.SCRIET</a> Member - Mentoring junior students in DSA and Web Development</> }
+    { title: 'Tech Community Leader', description: <><a href="https://codescriet.dev/" target="_blank" rel="noopener noreferrer" style={{ color: '#06B6D4', textDecoration: 'none', fontWeight: '600' }}>CODE.SCRIET</a> Member - Mentoring junior students in DSA and Web Development</> }
   ];
+
+  const [profileName, setProfileName] = useState('Girdhari Singh Yadav');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await authService.getAdminProfile();
+        if (data.profile?.name) {
+          setProfileName(data.profile.name);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+
+    const handleUpdate = () => fetchProfile();
+    window.addEventListener('profileUpdated', handleUpdate);
+    return () => window.removeEventListener('profileUpdated', handleUpdate);
+  }, []);
 
   return (
     <div style={styles.container}>
       <div style={styles.hero}>
-        <h1 style={styles.heroTitle}>Girdhari Singh Yadav</h1>
+        <h1 style={styles.heroTitle}>{profileName}</h1>
         <p style={styles.heroSubtitle}>Full Stack Web Developer | MERN Stack | DSA Enthusiast</p>
       </div>
 

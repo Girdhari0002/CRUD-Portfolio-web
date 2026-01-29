@@ -1,14 +1,35 @@
 import React, { useEffect } from 'react';
 import { useProjects } from '../hooks/useProjects';
 import { ProjectCard } from '../components/projects/ProjectCard';
+import { authService } from '../services/authService';
 
 export const Home = () => {
   const { projects, fetchProjects } = useProjects();
-  
+
+  const [profileName, setProfileName] = React.useState('Girdhari Singh Yadav');
+
   useEffect(() => {
     fetchProjects();
+
+    const fetchProfile = async () => {
+      try {
+        const data = await authService.getAdminProfile();
+        if (data.profile?.name) {
+          setProfileName(data.profile.name);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+
+    // Listen for profile updates
+    const handleUpdate = () => fetchProfile();
+    window.addEventListener('profileUpdated', handleUpdate);
+    return () => window.removeEventListener('profileUpdated', handleUpdate);
   }, [fetchProjects]);
-  
+
   const featuredProjects = projects.filter((p) => p.featured).slice(0, 3);
 
   return (
@@ -16,7 +37,7 @@ export const Home = () => {
       {/* Hero Section */}
       <section style={styles.hero}>
         <div style={styles.heroContent}>
-          <h1>Girdhari Singh Yadav</h1>
+          <h1>{profileName}</h1>
           <p style={styles.subtitle}>Full Stack Web Developer | MERN Stack | DSA Enthusiast</p>
           <p style={styles.description}>
             Building scalable, responsive, and user-centric web applications with modern technologies.
