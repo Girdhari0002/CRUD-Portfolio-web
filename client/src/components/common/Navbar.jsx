@@ -22,6 +22,18 @@ export const Navbar = ({ user, onLogout }) => {
     };
 
     fetchProfile();
+
+    // Listen for profile updates
+    const handleProfileUpdate = () => {
+      fetchProfile();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   return (

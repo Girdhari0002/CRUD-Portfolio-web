@@ -56,6 +56,10 @@ export const ProfileSettings = () => {
     try {
       await authService.updateProfile(profile);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
+
+      // Dispatch custom event to notify Navbar and other components
+      window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profile }));
+
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update profile' });
