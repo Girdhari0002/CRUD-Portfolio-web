@@ -7,13 +7,17 @@ export const Navbar = ({ user, onLogout }) => {
     name: 'Girdhari Singh Yadav',
     photoUrl: 'https://avatars.githubusercontent.com/u/Girdhari0002'
   });
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const data = await authService.getAdminProfile();
+        console.log('Fetched admin profile:', data);
         if (data.profile) {
           setProfile(data.profile);
+          setImageError(false);
+          console.log('Profile updated in navbar:', data.profile);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -25,6 +29,7 @@ export const Navbar = ({ user, onLogout }) => {
 
     // Listen for profile updates
     const handleProfileUpdate = () => {
+      console.log('Profile update event received');
       fetchProfile();
     };
 
@@ -40,12 +45,21 @@ export const Navbar = ({ user, onLogout }) => {
     <nav style={styles.navbar}>
       <div style={styles.container}>
         <div style={styles.logo}>
-          <img
-            src={profile.photoUrl}
-            alt={profile.name}
-            style={styles.profilePhoto}
-            onError={(e) => (e.target.style.display = 'none')}
-          />
+          {!imageError && profile.photoUrl ? (
+            <img
+              src={profile.photoUrl}
+              alt={profile.name}
+              style={styles.profilePhoto}
+              onError={() => {
+                console.error('Failed to load image:', profile.photoUrl);
+                setImageError(true);
+              }}
+            />
+          ) : (
+            <div style={styles.profilePhotoPlaceholder}>
+              {profile.name ? profile.name.charAt(0).toUpperCase() : 'G'}
+            </div>
+          )}
           <h1 style={styles.logoText}>{profile.name}</h1>
         </div>
 
@@ -104,6 +118,19 @@ const styles = {
     borderRadius: '50%',
     border: '2px solid #06B6D4',
     objectFit: 'cover',
+  },
+  profilePhotoPlaceholder: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    border: '2px solid #06B6D4',
+    backgroundColor: '#06B6D4',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: '18px',
   },
   logoText: {
     margin: 0,
