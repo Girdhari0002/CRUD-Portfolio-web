@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { authService } from '../../services/authService';
 
 export const ProfileSettings = () => {
   const [profile, setProfile] = useState({
@@ -8,14 +9,26 @@ export const ProfileSettings = () => {
   const [message, setMessage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(profile.photoUrl);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    // Load profile from localStorage
-    const savedProfile = localStorage.getItem('portfolioProfile');
-    if (savedProfile) {
-      const loadedProfile = JSON.parse(savedProfile);
-      setProfile(loadedProfile);
-      setPreviewUrl(loadedProfile.photoUrl);
-    }
+    // Load profile from backend
+    const loadProfile = async () => {
+      try {
+        const data = await authService.getMe();
+        if (data.user) {
+          const userProfile = {
+            name: data.user.name || 'Girdhari Singh Yadav',
+            photoUrl: data.user.photoUrl || 'https://avatars.githubusercontent.com/u/Girdhari0002'
+          };
+          setProfile(userProfile);
+          setPreviewUrl(userProfile.photoUrl);
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+    loadProfile();
   }, []);
 
   const handleChange = (e) => {
@@ -26,23 +39,29 @@ export const ProfileSettings = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!profile.name.trim()) {
       setMessage({ type: 'error', text: 'Name is required' });
       return;
     }
-    
+
     if (!profile.photoUrl.trim()) {
       setMessage({ type: 'error', text: 'Photo URL is required' });
       return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('portfolioProfile', JSON.stringify(profile));
-    setMessage({ type: 'success', text: 'Profile updated successfully! Changes will appear after refresh.' });
-    setTimeout(() => setMessage(null), 3000);
+    setLoading(true);
+    try {
+      await authService.updateProfile(profile);
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update profile' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,8 +116,8 @@ export const ProfileSettings = () => {
             </small>
           </div>
 
-          <button type="submit" style={styles.submitBtn}>
-            Save Profile Changes
+          <button type="submit" disabled={loading} style={styles.submitBtn}>
+            {loading ? 'Saving...' : 'Save Profile Changes'}
           </button>
         </form>
 
@@ -107,8 +126,8 @@ export const ProfileSettings = () => {
           <div style={styles.previewCard}>
             <div style={styles.navbarPreview}>
               <div style={styles.previewLogo}>
-                <img 
-                  src={previewUrl} 
+                <img
+                  src={previewUrl}
                   alt={profile.name}
                   style={styles.previewPhoto}
                   onError={(e) => {

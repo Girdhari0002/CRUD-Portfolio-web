@@ -38,6 +38,8 @@ exports.register = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        name: user.name,
+        photoUrl: user.photoUrl,
         role: user.role,
       },
     });
@@ -88,6 +90,8 @@ exports.login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        name: user.name,
+        photoUrl: user.photoUrl,
         role: user.role,
       },
     });
@@ -118,6 +122,8 @@ exports.getMe = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        name: user.name,
+        photoUrl: user.photoUrl,
         role: user.role,
       },
     });
@@ -138,6 +144,48 @@ exports.logout = async (req, res) => {
   });
 };
 
+// Update Profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, photoUrl } = req.body;
+
+    // Find user by ID (from auth middleware)
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Update fields if provided
+    if (name) user.name = name;
+    if (photoUrl) user.photoUrl = photoUrl;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        photoUrl: user.photoUrl,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+      error: error.message,
+    });
+  }
+};
+
 // Verify Token
 exports.verifyToken = async (req, res) => {
   res.status(200).json({
@@ -145,4 +193,32 @@ exports.verifyToken = async (req, res) => {
     message: 'Token is valid',
     userId: req.userId,
   });
+};
+
+// Get Admin Profile (Public)
+exports.getAdminProfile = async (req, res) => {
+  try {
+    const user = await User.findOne({ role: 'admin' });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin profile not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      profile: {
+        name: user.name,
+        photoUrl: user.photoUrl,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching admin profile',
+      error: error.message,
+    });
+  }
 };

@@ -16,6 +16,14 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email'],
   },
+  name: {
+    type: String,
+    default: 'Portfolio Admin',
+  },
+  photoUrl: {
+    type: String,
+    default: 'https://avatars.githubusercontent.com/u/Girdhari0002',
+  },
   password: {
     type: String,
     required: true,

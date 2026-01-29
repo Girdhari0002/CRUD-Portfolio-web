@@ -36,4 +36,17 @@ export const authService = {
     const response = await api.get('/auth/verify');
     return response.data;
   },
+
+  updateProfile: async (data) => {
+    const response = await api.put('/auth/profile', data);
+    if (response.data.user) {
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  },
+
+  getAdminProfile: async () => {
+    const response = await api.get('/auth/admin-profile');
+    return response.data;
+  },
 };

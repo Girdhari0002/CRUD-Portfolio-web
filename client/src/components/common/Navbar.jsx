@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { authService } from '../../services/authService';
 
 export const Navbar = ({ user, onLogout }) => {
   const [profile, setProfile] = useState({
@@ -8,18 +9,27 @@ export const Navbar = ({ user, onLogout }) => {
   });
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem('portfolioProfile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    }
+    const fetchProfile = async () => {
+      try {
+        const data = await authService.getAdminProfile();
+        if (data.profile) {
+          setProfile(data.profile);
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        // Fallback to defaults
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   return (
     <nav style={styles.navbar}>
       <div style={styles.container}>
         <div style={styles.logo}>
-          <img 
-            src={profile.photoUrl} 
+          <img
+            src={profile.photoUrl}
             alt={profile.name}
             style={styles.profilePhoto}
             onError={(e) => (e.target.style.display = 'none')}
