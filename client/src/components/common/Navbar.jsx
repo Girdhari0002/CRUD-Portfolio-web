@@ -13,7 +13,7 @@ export const Navbar = ({ user, onLogout }) => {
     const fetchProfile = async () => {
       try {
         const data = await authService.getAdminProfile();
-        console.log('Fetched admin profile:', data);
+       
         if (data.profile) {
           setProfile(data.profile);
           setImageError(false);
